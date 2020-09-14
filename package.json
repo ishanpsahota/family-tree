@@ -42,6 +42,7 @@
     "mongoose": "^5.10.5",
     "nodemailer": "^6.4.11",
     "vue": "^2.6.12",
+    "vue-headful": "^2.1.0",
     "vuex": "^3.5.1"
   }
 }
