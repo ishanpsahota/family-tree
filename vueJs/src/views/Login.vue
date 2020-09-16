@@ -14,15 +14,15 @@
                 <form @submit.prevent="login()" class="text-light">
                     <div class="form-group">
                       <label for="email">E-Mail</label>
-                      <input type="text" name="email" id="email" class="form-control bg-transparent text-light border-light" placeholder="Enter E-Mail" required aria-describedby="emailSmall">
+                      <input type="email" name="email" id="email" v-model="email" class="form-control bg-transparent text-light border-light" placeholder="Enter E-Mail" required aria-describedby="emailSmall">
                       <small id="emailSmall" class="text-light">Enter E-Mail here</small>
                     </div>
                     <div class="form-group">
                       <label for="password"> Password </label>
-                      <input type="password" class="form-control bg-transparent text-light border-light" name="password" id="password" minlength="6" required placeholder="******">
+                      <input type="password" v-model="password" class="form-control bg-transparent text-light border-light" name="password" id="password" minlength="6" required placeholder="******">
                       <small id="emailSmall" class="text-light">Enter Password here</small>
                     </div>
-                    <button type="submit" class="btn btn-success btn-block">Login</button>
+                    <button type="submit" class="btn btn-light btn-lg btn-block">Login</button>
                 </form>
             </div>
         </div>
@@ -40,8 +40,30 @@ export default {
     },
     data() {
         return {
-            title: 'Login'
+            title: 'Login',
+            email: '',
+            password: 's'
         }
+    },
+
+    methods: {
+
+        login: function () {
+            this.loading = true;
+            let email = this.email
+            let password = this.password
+            this.$store.dispatch('login', { email, password })
+            .then(() => {
+                this.loading = false; 
+                this.$router.push('/trees')
+            })
+            .catch(err => {
+                this.loading = false;    
+                this.msg = err;
+                
+            })
+        }
+
     }
 }
 </script>

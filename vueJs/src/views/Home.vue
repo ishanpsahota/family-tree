@@ -7,7 +7,8 @@
             </div>
             <div class="col-12 m-auto text-center text-light">
                 <h1 class="display-1 "> Family Tree </h1>
-                <h2> <small> <a class="text-warning" href="/login"> Login </a> or <a class="text-warning" href="/register"> Register</a> </small> </h2>
+                <h2 v-if="loggedIn"> <small> <a class="text-warning" href="/trees"> View Trees </a> or <a class="text-warning" href="/profile"> View Profile </a> </small>  </h2>
+                <h2 v-else> <small> <a class="text-warning" href="/login"> Login </a> or <a class="text-warning" href="/register"> Register</a> </small>  </h2>
             </div>
         </div>
         <div class="crow row h-r2 w-100 p-0 m-0 d-flex flex-row">
@@ -34,8 +35,12 @@ export default {
     },
     data() {
         return {
-            title: 'Home'
+            title: 'Home',
+            loggedIn: false
         }
+    },
+    created() {
+        this.loggedIn = !!this.$store.getters.isLoggedIn
     }
 }
 </script>

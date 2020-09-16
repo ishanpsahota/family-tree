@@ -4,6 +4,7 @@ const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const routes = require('./routes')
 const helmet = require('helmet')
+const cors = require('cors')
 
 const app = express()
 
@@ -20,8 +21,10 @@ mongoose.connection.on('open', function()
     console.log('Connection error: ' + err);
 });
 
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(cors());
+
+app.use(bodyParser.json());
 app.use('/', routes);
-app.use(helmet)
+app.use(helmet())
 
 module.exports = app;

@@ -49,6 +49,17 @@ body
     background-color: #7FB3D5 ;
 }
 
+.nt-r1 
+{
+    background-color: #3498DB ;
+}
+
+.chart-row
+{
+    min-height: 100vh;
+    height: auto;
+}
+
 .crow
 {
    min-height: 65vh;
