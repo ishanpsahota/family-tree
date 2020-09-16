@@ -48,6 +48,10 @@ function getRel(gender, rel) {
 
 }
 
+router.get('/', function(req, res) {
+    res.send("Wrong Place you're hitting it from ;-)")
+})
+
 router.post('/login', function(req, res){
     if(!req.body.email || !req.body.password) {
         console.log("exp-rtr-lgn-mpt")
