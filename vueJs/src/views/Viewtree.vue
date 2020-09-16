@@ -144,7 +144,7 @@ export default {
             gender: '',
             treeGetErr: false,
             error: '',
-            members: '',
+            members: [],
             owner: {
                 id: '',
                 title: '',
@@ -232,13 +232,6 @@ export default {
 
         },
 
-        getMembers() {
-
-            this.members = this.tree.members;
-            // console.log(this.members)
-
-        },
-
         getTree() {
 
             const rid = this.$route.params.id
@@ -250,7 +243,7 @@ export default {
                 if(res.status === 200)
                 {
                     this.tree = res.data.tree   
-                    this.getMembers()                 
+                    // this.getMembers()                 
                     this.getAllMembers()
                 }
 
@@ -342,6 +335,36 @@ export default {
             return nmg
             
         },
+
+        getHierarchy(members) {
+
+            members.forEach((member, index) => {
+
+                if(member.trees.treeid == this.tree._id)
+                {
+                    if(member.trees.owner == true)
+                    var owner = {
+                        id: 1,
+                        name: member.name,
+                        title: 'Owner'
+                    }
+
+                    this.members.push(owner)
+                }
+                else
+                {
+                    var mem = {
+                        id: index,
+                        name: member.name,
+                        title: 
+                    }
+
+                    this.members.push(mem)
+                }
+
+            });
+
+        }
 
     },
     
