@@ -1,0 +1,67 @@
+body
+{
+    font-family: 'Titillium Web', sans-serif;
+    scroll-behavior: smooth;
+}
+
+.h-r1
+{
+    background-color: #4169E1;
+}
+
+.h-r2
+{
+    background-color: #00BFFF;
+}
+
+.h-r3
+{
+    background-color: #000080;
+}
+
+.l-r1
+{
+    background-color: #8E44AD ;
+}
+
+.l-r2
+{
+    background-color:#A569BD ;
+}
+
+.r-r1
+{
+    background-color: #E74C3C;
+}
+
+.r-r2
+{
+    background-color: #EC7063 ;
+}
+
+.t-r1
+{
+    background-color: #2980B9;
+}
+
+.t-r2
+{
+    background-color: #7FB3D5 ;
+}
+
+.nt-r1 
+{
+    background-color: #3498DB ;
+}
+
+.chart-row
+{
+    min-height: 100vh;
+    height: auto;
+}
+
+.crow
+{
+   min-height: 65vh;
+   height: auto;
+}
