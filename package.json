@@ -12,7 +12,7 @@
     "dev": "concurrently \"npm run dev-be\"  \"npm run dev-fe\"",
     "build-f": "concurrently \"npm run setup && npm run build-fe\"",
     "setup": "concurrently \" npm install \" \"cd vueJs && npm install\"",
-    "build": "cd server && node start.js"
+    "start": "cd server && node start.js"
   },
   "repository": {
     "type": "git",
