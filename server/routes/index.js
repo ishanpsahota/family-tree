@@ -142,7 +142,22 @@ router.post('/register', function(req, res){
                                     if(err) { console.log(err); return res.sendStatus(400)}
                                     if(!treeMemberAdded) return res.sendStatus(401)
                                     if(treeMemberAdded) {
-                                        return res.sendStatus(200)
+                                        // return res.sendStatus(200)
+                                        if(req.body.relationships.name == 'father' || req.body.relationships.name == 'mother')
+                                        {
+                                            Tree.findOneAndUpdate({ "members.memberId": req.body.relationships.with }, { "members.parentId": treeMemberAdded._id  }).exec(function(err, treeUpdated) {
+
+                                                if(err) { console.log(err); return res.sendStatus(400)}
+                                                if(!treeUpdated) return res.sendStatus(401)
+                                                if(treeUpdated) {
+    
+                                                    return res.sendStatus(200)
+    
+                                                }
+    
+                                            })
+                                        }
+                                        else return res.sendStatus(200)
                                     }
 
                                 })
