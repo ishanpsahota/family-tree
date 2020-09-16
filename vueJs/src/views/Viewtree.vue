@@ -101,7 +101,8 @@
         <div class="chart-row row p-2 bg-light m-0 w-100">
             <div v-if="tree" class="w-100 col-11 m-auto bg-white rounded shadow">   
                 {{allMembers}}       
-                <Chart />
+                {{tree}}
+                <Chart :members=members />
             </div>
             <div v-if="treeGetErr || memberErr" class="col-12">
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -278,6 +279,7 @@ export default {
                 if(res.status === 200)
                 {
                     this.allMembers = res.members
+                    this.getHierarchy(this.allMembers)
                     // console.log(this.allMembers)
                 }
 
@@ -336,36 +338,52 @@ export default {
             
         },
 
-        getHierarchy(members) {
+        matchMembers(id, members) {
 
-            members.forEach((member, index) => {
-
-                if(member.trees.treeid == this.tree._id)
+            var name = ""
+            
+            members.forEach((member) => {
+            
+                if(member._id == id) 
                 {
-                    if(member.trees.owner == true)
-                    {
-                        var owner = {
-                            id: 1,
-                            name: member.name,
-                            title: 'Owner'
-                        }
-
-                        this.members.push(owner)
-                    }                        
-                
-                    else
-                    {
-                        var mem = {
-                            id: index,
-                            name: member.name,
-                            title: member.relationships
-                        }
-
-                        this.members.push(mem)
-                    }
+                    name = member.name
                 }
 
-            });
+            })
+
+            return name
+
+        },
+
+        getHierarchy(members) {
+
+            this.tree.members.forEach((member, index) => {
+
+                if(member.relWithOwner == 'self' && member.memberId == localStorage.getItem('id'))
+                {
+                    var owner = {
+                        id:1,
+                        name: this.matchMembers(member.memberId, members),
+                        title: 'Owner'
+                    }
+
+                    this.members.push(owner)
+                }
+                else
+                {
+                    var mem = {
+                        id: index+1, 
+                        name: this.matchMembers(member.memberId, members),
+                        title: member.relWithOwner,
+                        pid: member.parentId
+                    }
+
+                    this.members.push(mem)
+                }
+
+            })
+
+            // console.log(this.members)
 
         }
 
