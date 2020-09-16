@@ -343,23 +343,26 @@ export default {
                 if(member.trees.treeid == this.tree._id)
                 {
                     if(member.trees.owner == true)
-                    var owner = {
-                        id: 1,
-                        name: member.name,
-                        title: 'Owner'
-                    }
+                    {
+                        var owner = {
+                            id: 1,
+                            name: member.name,
+                            title: 'Owner'
+                        }
 
-                    this.members.push(owner)
-                }
-                else
-                {
-                    var mem = {
-                        id: index,
-                        name: member.name,
-                        title: 
-                    }
+                        this.members.push(owner)
+                    }                        
+                
+                    else
+                    {
+                        var mem = {
+                            id: index,
+                            name: member.name,
+                            title: member.relationships
+                        }
 
-                    this.members.push(mem)
+                        this.members.push(mem)
+                    }
                 }
 
             });
