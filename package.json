@@ -10,7 +10,8 @@
     "start-be": "concurrently \"cd server && nodemon ./start.js\"",
     "dev": "concurrently \"npm run start-be\"  \"npm run dev-fe\"",
     "build": "concurrently \"npm run build-fe && npm run start-be\"",
-    "setup": "concurrently \" npm install \" \"cd vueJs && npm install\""
+    "setup": "concurrently \" npm install \" \"cd vueJs && npm install\"",
+    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client"
   },
   "repository": {
     "type": "git",
@@ -52,5 +53,9 @@
     "vue": "^2.6.12",
     "vue-headful": "^2.1.0",
     "vuex": "^3.5.1"
+  },
+  "devDependencies": {
+    "concurrently": "^5.3.0",
+    "nodemon": "^2.0.4"
   }
 }
