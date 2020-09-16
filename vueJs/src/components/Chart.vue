@@ -1,10 +1,10 @@
 <template>
   <div id="chart">
-    <!-- <div class="row p-5">  -->
+    <div class="row p-5"> 
       <div v-if="spinner">
         <div class="spinner-border text-dark"></div>
       </div>
-      <!--<div v-for="member in members" :key="member.id" class="card col-12 col-md-2 bg-white rounded shadow-sm m-1 p-0">
+      <div v-for="member in members" :key="member.id" class="card col-12 col-md-2 bg-white rounded shadow-sm m-1 p-0">
         <div class="card-body">
           <h3> {{member.name}} </h3>
         </div>
@@ -12,7 +12,7 @@
           <small> {{member.title}} </small>
         </div>
       </div>
-    </div> -->
+    </div>
     <div id="tree" ref="tree">
     </div>  
   </div>
