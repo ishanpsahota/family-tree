@@ -10,8 +10,9 @@
     "dev-be": "concurrently \"cd server && nodemon ./start.js\"",
     "start-be": "concurrently \"cd server && node start.js\"",
     "dev": "concurrently \"npm run dev-be\"  \"npm run dev-fe\"",
-    "build": "concurrently \"npm run setup && npm run build-fe && npm run start-be\"",
-    "setup": "concurrently \" npm install \" \"cd vueJs && npm install\""
+    "build-f": "concurrently \"npm run setup && npm run build-fe && npm run start-be\"",
+    "setup": "concurrently \" npm install \" \"cd vueJs && npm install\"",
+    "build": "concurrently \"cd server && node start.js\""
   },
   "repository": {
     "type": "git",
