@@ -74,6 +74,7 @@
             </div>                        
         </div>
     </div>
+    <Footer />
   </div>
 </template>
 
@@ -82,11 +83,13 @@
 import Nav from '../components/Nav'
 import services from '../api/services'
 import CryptoJS from 'crypto-js'
+import Footer from '../components/Footer'
 
 export default {
     name: 'Trees',
     components: {
-        Nav
+        Nav,
+        Footer
     },
     data() {
         return {

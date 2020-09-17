@@ -71,17 +71,20 @@
                 </form>
             </div>
         </div>
+        <Footer />
     </div>
 </template>
 
 <script>
 
 import Nav from '../components/Nav'
+import Footer from '../components/Footer'
 
 export default {
     name: 'Login',
     components: {
-        Nav
+        Nav,
+        Footer
     },
     data() {
         return {
