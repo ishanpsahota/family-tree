@@ -50,7 +50,7 @@ export default new Vuex.Store({
                 commit('auth_request')
                 axios({url: url + '/login', data: user, method: 'POST' })
                 .then(resp => {
-                  console.log(resp.data)
+                  // console.log(resp.data)
                     if(resp.data.status === 200)
                     {
                         // console.log(resp)
@@ -73,8 +73,8 @@ export default new Vuex.Store({
                         commit('auth_success', data.token, data.name, data.email, data.id);
                         resolve(resp);
                     }
-
-                    if(resp.data.status === 500) reject()
+                    else reject(resp)
+                    
                 })
                 .catch(err => {
                     commit('auth_error')

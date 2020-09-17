@@ -170,6 +170,7 @@ export default {
                 menu: {
                     pdf: { text: "Export PDF" }
                 },
+                mouseScrool: OrgChart.action.none,
 				nodes: x,
 				nodeBinding: {
 					field_0: "name",

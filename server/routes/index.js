@@ -139,12 +139,15 @@ router.post('/register', function(req, res){
 
                                 Tree.findByIdAndUpdate(req.body.trees.treeId, { $push: {members: newTreeMember } }, function(err, treeMemberAdded) {
 
+                                    // console.log(req.body.relationships)
                                     if(err) { console.log(err); return res.sendStatus(400)}
                                     if(!treeMemberAdded) return res.sendStatus(401)
                                     if(treeMemberAdded) {
                                         // return res.sendStatus(200)
+                                        // console.log("see relation " + req.body.relationships)
                                         if(req.body.relationships.name == 'father' || req.body.relationships.name == 'mother')
                                         {
+                                            console.log("father/mother")
                                             Tree.findOneAndUpdate({ "members.memberId": req.body.relationships.with }, { "members.parentId": treeMemberAdded._id  }).exec(function(err, treeUpdated) {
 
                                                 if(err) { console.log(err); return res.sendStatus(400)}
