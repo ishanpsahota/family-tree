@@ -14,7 +14,7 @@ Vue.use(Vuex)
 
 
 axios.defaults.headers.common['Access-Control-Allow-Origin'] = "*"
-axios.defaults.headers.common['Access-Control-Allow-Headers'] = 'http://localhost:8080';
+axios.defaults.headers.common['Access-Control-Allow-Headers'] = '*';
 
 export default new Vuex.Store({
     state: {
