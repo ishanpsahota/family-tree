@@ -2,14 +2,16 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import axios from 'axios'
 import crypto from 'crypto'
+import services from '../api/services'
 
 // function getToken() {
 //   return crypto.randomBytes(64).toString('hex');
 // }
 
+var url = services.getUrl().url;
+
 Vue.use(Vuex)
 
-let url = "http://localhost:8081";
 
 axios.defaults.headers.common['Access-Control-Allow-Origin'] = "*"
 axios.defaults.headers.common['Access-Control-Allow-Headers'] = 'http://localhost:8080';

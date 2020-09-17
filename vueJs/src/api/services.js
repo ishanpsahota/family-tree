@@ -13,8 +13,8 @@ var urls = {
     'newTree': url + '/new',
     'getTrees': url + '/trees/',
     'viewTrees': url + '/viewtree/',
-    'getAllMembers': url + '/members/'
-
+    'getAllMembers': url + '/members/',
+    'url': url
 }
 
 
