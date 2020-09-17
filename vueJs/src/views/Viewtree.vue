@@ -297,13 +297,19 @@ export default {
                 id: localStorage.getItem('id'),
                 treeid: tree
             }
+
+            var members = ""
             
             services.getAllMembers(creds.id, creds.treeid)
             .then(res => {
 
+                // console.log(res)
+
                 if(res.status === 200)
                 {
-                    this.tempMembers = res.members                    
+                    members = res.members
+                    console.log(members) 
+                    return members                   
                 }
 
             }).catch(err => {
@@ -315,7 +321,10 @@ export default {
                     return null
                 }
 
-            })            
+            }) 
+            
+            // console.log(members)
+            // return members
 
         },
 
@@ -463,8 +472,8 @@ export default {
 
         getParentNumber(relation, newMember) {
 
-            this.getMembers()
-            var members = this.tempMembers
+            // this.getMembers()
+            var members = this.getMembers()
             
             console.log(members)
             
@@ -523,7 +532,7 @@ export default {
 
         // console.log(this.allMembers)
         // console.log(this.tree)
-        console.log(this.members)
+        // console.log(this.members)    
 
         if(this.members) {            
             setTimeout(() => {

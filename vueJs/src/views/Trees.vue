@@ -131,7 +131,7 @@ export default {
             var rid = CryptoJS.AES.encrypt(this.getOwner().id, 'ishanpsahota@m3ral@wda').toString();
             // rid = rid.replace(/\\|\//g,'')
             rid = rid.replace(/[^a-zA-Z0-9]/g,'')
-            console.log(rid)
+            // console.log(rid)
 
             var treeData = {
                 name: this.treeTitle,
