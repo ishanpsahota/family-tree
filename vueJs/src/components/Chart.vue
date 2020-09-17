@@ -1,103 +1,122 @@
-<template>
-  <div id="chart">
-    <div class="row p-5"> 
-      <div v-if="spinner">
-        <div class="spinner-border text-dark"></div>
-      </div>
-      <div v-for="member in members" :key="member.id" class="card col-12 col-md-2 bg-white rounded shadow-sm m-1 p-0">
-        <div class="card-body">
-          <h3> {{member.name}} </h3>
-        </div>
-        <div class="card-footer">
-          <small> {{member.title}} </small>
-        </div>
-      </div>
-    </div>
-    <div id="tree" ref="tree">
-    </div>  
-  </div>
+ <template>
+	<div id="chart">
+		members: {{members}}		
+		tree: {{tree}}
+		<div id="tree" ref="tree">
+		</div>
+	</div>
 </template>
 
 <script>
 
-import OrgChart from '@balkangraph/orgchart.js';
-// import inView from 'in-view'
+import OrgChart from '@balkangraph/orgchart.js'
 
 export default {
-    name: 'tree',
-      data() {
-        return {
-            nodesss: [
-                { id: 1, name: "Denny Curtis", title: "CEO", img: "https://cdn.balkan.app/shared/2.jpg" },
-                { id: 2, pid: 1, name: "Ashley Barnett", title: "Sales Manager", img: "https://cdn.balkan.app/shared/3.jpg" },
-                { id: 3, pid: 1, name: "Caden Ellison", title: "Dev Manager", img: "https://cdn.balkan.app/shared/4.jpg" },
-                { id: 4, pid: 2, name: "Elliot Patel", title: "Sales", img: "https://cdn.balkan.app/shared/5.jpg" },
-                { id: 5, pid: 2, name: "Lynn Hussain", title: "Sales", img: "https://cdn.balkan.app/shared/6.jpg" },
-                { id: 6, pid: 3, name: "Tanner May", title: "Developer", img: "https://cdn.balkan.app/shared/7.jpg" },
-                { id: 7, pid: 3, name: "Fran Parsons", title: "Developer", img: "https://cdn.balkan.app/shared/8.jpg" }
-            ],
 
-            // nodes: this.members,
-            spinner: true
-        }
-      },
-      props: {
-        members: Array
-      },
+	name: 'tree',
+	data() {
+		return {
+			nodesx: [
+				{ id: 1, name: "Denny Curtis", title: "CEO", img: "https://cdn.balkan.app/shared/2.jpg" },
+				{ id: 2, pid: 1, name: "Ashley Barnett", title: "Sales Manager", img: "https://cdn.balkan.app/shared/3.jpg" },
+				{ id: 3, pid: 1, name: "Caden Ellison", title: "Dev Manager", img: "https://cdn.balkan.app/shared/4.jpg" },
+				{ id: 4, pid: 2, name: "Elliot Patel", title: "Sales", img: "https://cdn.balkan.app/shared/5.jpg" },
+				{ id: 5, pid: 2, name: "Lynn Hussain", title: "Sales", img: "https://cdn.balkan.app/shared/6.jpg" },
+				{ id: 6, pid: 3, name: "Tanner May", title: "Developer", img: "https://cdn.balkan.app/shared/7.jpg" },
+				{ id: 7, pid: 3, name: "Fran Parsons", title: "Developer", img: "https://cdn.balkan.app/shared/8.jpg" }
+			],
 
-      methods: {
-          oc: function(domEl, x) {            
+			nodes: []
+		}
+	},
 
-            console.log("hx")
-            this.chart = new OrgChart(domEl, {
-              mouseScrool: OrgChart.action.none,
-              menu: {
-                pdf: { text: "Export PDF" },
-                png: { text: "Export PNG" }
-              },  
-              nodeMenu: {
-                  pdf: { text: "Export PDF" },
-                  png: { text: "Export PNG" },
-                  svg: { text: "Export SVG" }
-              },
-              nodes: x,
-              nodeBinding: {
-                  field_0: "name",
-                  field_1: "title",
-                  img_0: "img"
-              }
-            });
+	props: {
+		members: Array,
+		tree: Object
+	},
 
-            console.log("h2x")
+	methods: {
+		oc: function(domEl, x) {
+			this.chart = new OrgChart(domEl, {
+				nodes: x,
+				nodeBinding: {
+					field_0: "name",
+					field_1: "title",
+					img_0: "img"
+				}
+			});
+		},
 
-            this.spinner = false
+		matchMembers(id, members) {
 
-          },
-      },
+			var name = ""
+		
+			members.forEach((member) => {
+			
+				if(member._id == id) 
+				{
+					name = member.name
+				}
 
-      created() {
-        // this.oc(this.$refs.tree, this.nodes)
-      },
+			})
 
-      beforeMount() {
+			return name
 
-        // this.oc(this.$refs.tree, this.nodes)
+		},
 
-      },
+		getParent(tree, parentId) {
 
-      mounted(){
+			if(parentId == null ) return null   
 
-        this.oc(this.$refs.tree, this.nodes)
-        
-        // setTimeout(() =>{
-        //   this.spinner = false
-        // }, 4000)
-        // console.log(this.nodes) 
+			tree.members.forEach((member, index) => {
 
-      }
+				if(member.memberId == parentId) return index
+				else return null
+
+			})
+
+		},
+
+		async getHierarchy() {
+
+			this.tree.members.forEach((member, index) => {
+
+				if(member.relWithOwner == 'self' && member.memberId == localStorage.getItem('id'))
+				{
+					var owner = {
+						id:1,
+						name: this.matchMembers(member.memberId, this.members),
+						title: 'Owner',
+						pid: this.getParent(this.tree, member.parentId)
+					}
+
+					this.nodes.push(owner)
+				}
+				else
+				{
+					var mem = {
+						id: index+1, 
+						name: this.matchMembers(member.memberId, this.members),
+						title: member.relWithOwner,
+						pid: this.getParent(this.tree, member.parentId)
+					}
+
+					this.nodes.push(mem)
+				}
+
+			})
+
+		},
+	},
+
+	mounted() {
+		
+		this.oc(this.$refs.tree, this.nodes)		
+		this.getHierarchy()
+
+	}
 }
 </script>
 
-<style>
-
+<style scoped>
 </style>

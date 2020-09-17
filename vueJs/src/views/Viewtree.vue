@@ -72,7 +72,7 @@
                                     </div>
                                     <select class="form-control" required v-model="relationship" name="relationship">
                                         <option value="none" disabled selected> Choose one </option>
-                                        <option value="father" :disabled=this.getFather() > Father </option>
+                                        <option value="father"  > Father </option>
                                         <option value="mother" > Mother </option>
                                         <option value="sister" > Sister </option>
                                         <option value="brother" > Brother </option>
@@ -101,7 +101,9 @@
         <div class="chart-row row p-2 bg-light m-0 w-100">
             <div v-if="tree" class="w-100 col-11 m-auto bg-white rounded shadow">   
                 <small> <code> The tree may take some time to load! </code> </small>                
-                <Chart :members=members />
+                <!-- Chart -->
+                <div id="tree" ref="tree"> </div>
+                <!-- Chart end -->
             </div>
             <div v-if="treeGetErr || memberErr" class="col-12">
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -121,9 +123,10 @@
 
 import Nav from '../components/Nav'
 import Footer from '../components/Footer'
-import Chart from '../components/Chart';
+// import Chart from '../components/Chart';
 // import CryptoJS from 'crypto-js'
 import services from '../api/services'
+import OrgChart from '@balkangraph/orgchart.js'
 
 export default {
 
@@ -131,7 +134,7 @@ export default {
     components: {
         Nav, 
         Footer,
-        Chart
+        // Chart
     },
     data() {
         return {
@@ -156,14 +159,25 @@ export default {
             addingMember: false,
             addMemberErr: false,
             addedMember: false,
-            tempMembers: []
+            tempMembers: [],
+            nodes: []
         }
     },
     methods: {
 
-        getFather() {
-
-        },
+        oc: function(domEl, x) {
+			this.chart = new OrgChart(domEl, {
+                menu: {
+                    pdf: { text: "Export PDF" }
+                },
+				nodes: x,
+				nodeBinding: {
+					field_0: "name",
+					field_1: "title",
+					img_0: "img"
+				}
+			});
+		},
 
         addMember() {
 
@@ -222,7 +236,8 @@ export default {
                     setTimeout(() => {
                         this.addedMember = false
                         this.addMemberBtn = true
-                        this.name = this.gender = this.relationship = this.dOb = this.email = ''                        
+                        this.name = this.gender = this.relationship = this.dOb = this.email = ''                            
+                        this.triggerChart()                    
                     }, 3500)
                 }
 
@@ -439,6 +454,8 @@ export default {
 
             })
 
+            this.triggerChart()
+
             // console.log(this.members)
 
         },
@@ -477,6 +494,14 @@ export default {
 
             this.addNow(newMember)
 
+        },
+
+        triggerChart() {
+
+            this.nodes = this.members    
+
+            this.oc(this.$refs.tree, this.nodes)	
+
         }
 
     },
@@ -491,6 +516,22 @@ export default {
     
         // this.getTree();
         // this.getAllMembers();
+    },
+
+    mounted() {
+
+        // console.log(this.allMembers)
+        // console.log(this.tree)
+        console.log(this.members)
+
+        if(this.members) {            
+            setTimeout(() => {
+               
+                this.triggerChart()
+
+            }, 2500)        
+            
+        } else this.treeGetErr = true
     }
 
 }
