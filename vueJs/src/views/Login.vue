@@ -118,9 +118,7 @@ export default {
             .catch(err => {
                 this.loading = false;    
                 this.loginError = true                
-
-                if(err.data.status == 400) this.msg = "Not Found or Invalid details"
-                if(err.data.status == 500) this.msg = "Internal Server Error"
+                console.log(err)            
 
                 // this.msg = err.data;
                 
