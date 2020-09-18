@@ -48,13 +48,13 @@
                             <button v-if="loadErr" type="button" disabled class="btn btn-danger btn-block">Error</button>
                             <button v-if="loadingDone" type="button" class="btn btn-success btn-block">Registered!</button>
                             <button type="reset" class="btn btn-dark btn-block">Reset</button>
-                            <span v-if="err"> 
+                            <span v-if="error"> 
                                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                         <span aria-hidden="true">&times;</span>
                                         <span class="sr-only">Close</span>
                                     </button>
-                                    <strong>Error!</strong> {{err}}
+                                    <strong>Error!</strong> {{error}}
                                 </div>
                             </span>
                         </form>
@@ -83,13 +83,13 @@ export default {
     },
     data() {
         return {
-            title: 'Login',
+            title: 'Register',
             name: '',
             dOb: '',
             email: '',
             password: '',
             gender: '',
-            err: '',
+            error: null,
             loading: false,
             loadErr: false,
             loadingDone: false,
@@ -115,34 +115,63 @@ export default {
             services.register(ownerData)
             .then(res => {
 
-                console.log("here")
+                // console.log("here")
+                // console.log(res)
 
-                if(res.status === 200)
+                if(res.data.status === 200)
                 {
                     this.loading = false
                     this.loadingDone = true
 
-                    setTimeout(3500, () => {
-                        
-                        this.$router.push('/trees')
-
-                    })
+                    setTimeout(() => {
+                        return this.$router.push('/login')
+                    }, 2500)
                 }
+                else if(res.data.status == 302)
+                {
+
+                    this.loading = false
+                    this.loadErr = true
+                    this.error = " Member Already Exists! "
+
+                }
+                else if(res.data.status == 406)
+                {
+                    this.loading = false
+                    this.loadErr = true
+                    this.error = " Details Missing! "
+                }
+                else if(res.data.status == 400)
+                {
+                    this.loading = false
+                    this.loadErr = true
+                    this.error = " Error in DB! "
+                }
+
+                setTimeout(() => {
+                    this.loadErr = false
+                    this.loader = true
+                    this.error = null
+                }, 2500)
 
             }).catch(err => {
 
+                console.log(err)
                 console.log("not here")
 
                 if(err)
                 {
                     this.loading = false;
                     this.loadErr = true
+                    this.error = err;
+                    
+                    setTimeout(() => {
 
-                    setTimeout(3000, () => {
+                        this.error = null
+                        this.loadErr = false
+                        this.loader = true
 
-                        this.loader = true;
-
-                    })
+                    }, 2500)
                 }
 
             })

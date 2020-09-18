@@ -66,7 +66,7 @@
                             <span aria-hidden="true">&times;</span>
                             <span class="sr-only">Close</span>
                         </button>
-                        <strong>Error!</strong> {{msg}}
+                        <strong>Error!</strong> {{error}}
                     </div>
                 </form>
             </div>
@@ -95,7 +95,7 @@ export default {
             loginNow: true,
             loggedIn: false,
             loginError: false,
-            msg: ''
+            error: ''
         }
     },
 
@@ -118,8 +118,16 @@ export default {
             .catch(err => {
                 this.loading = false;    
                 this.loginError = true                
-                console.log(err)            
-
+                // console.log(err)            
+                if(err.data.status === 400)
+                {
+                    this.error = "Either wrong credentials or user doesn't exist"
+                }
+                // this.error = err
+                setTimeout(() => {
+                    this.loginError = false
+                    this.loginNow = true
+                }, 2500)
                 // this.msg = err.data;
                 
             })

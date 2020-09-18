@@ -3,8 +3,8 @@ import axios from 'axios'
 axios.defaults.headers.common['Access-Control-Allow-Origin'] = "*"
 axios.defaults.headers.common['Access-Control-Allow-Headers'] = 'http://localhost:8080';
 
-// var url = `http://localhost:8081`
-var url = 'https://family-tree-i.herokuapp.com'
+var url = `http://localhost:8081`
+// var url = 'https://family-tree-i.herokuapp.com'
 
 var urls = { 
 
@@ -55,6 +55,8 @@ export default {
             axios.post( this.getUrl().owner, data)
             .then(res => {
 
+                // console.log(res)
+
                 if(res.status === 200)
                 {
                     resolve(res)
@@ -62,6 +64,7 @@ export default {
 
             }).catch(err => {
 
+                // console.log(err)
                 reject(err)
 
             })
@@ -138,6 +141,7 @@ export default {
 
             axios.get(this.getUrl().getAllMembers + id + '/' + treeid)
             .then(res => {
+                // console.log(res.data.)
                 resolve(res.data)
             }).catch(err => {
                 reject(err)

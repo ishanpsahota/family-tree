@@ -49,7 +49,7 @@
                                     <span aria-hidden="true">&times;</span>
                                     <span class="sr-only">Close</span>
                                 </button>
-                                <strong>Error!</strong> {{error}}
+                                <strong>Error!</strong> Error creating the tree. It already exists!
                             </div>
                         </form>
                     </div>
@@ -68,7 +68,7 @@
                 </span>
                 <div v-for="(tree, i) in trees" :key="i" class="card">
                     <div class="card-body">
-                         <button type="button" @click="viewTree(tree.randomId)" class="btn bg-transparent"><h2 class=""> {{tree.name}} </h2></button> 
+                        <button type="button" @click="viewTree(tree.randomId)" class="btn bg-transparent"><h2 class=""> {{tree.name}} </h2></button> 
                     </div>
                 </div>
             </div>                        
@@ -182,14 +182,20 @@ export default {
 
             this.gettingTrees = true;
 
+            if(!this.getOwner().id) return
+
             services.getTrees(this.getOwner().id)
             .then(res => {
+
+                // console.log(res)
                 
                 if(res.status === 200)
                 {
-                    this.gettingTrees = false
-                    this.trees = res.data.trees
+                    if(res.data.status === 200)
+                        this.gettingTrees = false
+                        this.trees = res.data.trees
                 }
+
 
             }).catch(err => {
 

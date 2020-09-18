@@ -43,8 +43,7 @@ const memberSchema = new mongoose.Schema({
         type: Date
     },
 
-    trees: [{
-        name: String,
+    trees: [{        
         treeId: mongoose.Types.ObjectId,
         owner: Boolean
     }]

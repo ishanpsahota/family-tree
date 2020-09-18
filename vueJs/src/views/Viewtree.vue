@@ -39,19 +39,7 @@
                                     </div>
                                     <input type="email" class="form-control" required name="email" v-model="email" placeholder="Enter E-Mail for the member" aria-label="email" aria-describedby="email">
                                 </div>
-                            </div>
-                            <!-- <div class="form-group m-0">
-                                <div class="input-group mb-3">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text" id="gender">Alive </span>
-                                    </div>
-                                    <div class="form-check form-check-inline p-3">
-                                        <label class="form-check-label">
-                                            <input class="form-check-input" type="checkbox" name="alive" id="alive" value="true" v-model="alive" required checked> 
-                                        </label>
-                                    </div>                                                    
-                                </div>
-                            </div> -->
+                            </div>                        
                             <div class="form-group m-0">
                                 <div class="input-group mb-3">
                                     <div class="input-group-prepend">
@@ -100,9 +88,21 @@
         </div>
         <div class="chart-row row p-2 bg-light m-0 w-100">
             <div v-if="tree" class="w-100 col-11 m-auto bg-white rounded shadow">   
-                <small> <code> The tree may take some time to load! </code> </small>                
-                <!-- Chart -->
-                <div id="tree" ref="tree"> </div>
+                <small> <code> The tree may take some time to load! </code> </small>   
+                <!-- Members -->                      
+                        
+                        <div v-if="nodes" class="row" >
+                            <div v-for="(node, i) in nodes" :key="i" class="card shadow-sm col-md-2 col-10 m-1">                                
+                                <div class="card-body">
+                                    <h4 class="card-title">{{node.name}}</h4>
+                                    <p class="card-text">{{node.title}}</p>
+                                </div>
+                            </div>
+                        </div>
+                    
+                <!-- Members end -->
+                <!-- Chart -->                
+                    <div id="tree" ref="tree"> </div>
                 <!-- Chart end -->
             </div>
             <div v-if="treeGetErr || memberErr" class="col-12">
@@ -123,8 +123,6 @@
 
 import Nav from '../components/Nav'
 import Footer from '../components/Footer'
-// import Chart from '../components/Chart';
-// import CryptoJS from 'crypto-js'
 import services from '../api/services'
 import OrgChart from '@balkangraph/orgchart.js'
 
@@ -134,7 +132,6 @@ export default {
     components: {
         Nav, 
         Footer,
-        // Chart
     },
     data() {
         return {
@@ -142,35 +139,26 @@ export default {
             name: '',
             email: '',
             relationship: '',
-            dOb: '',            
-            tree: '',
+            dOb: '',                        
             gender: '',
+            error: null,
+            tree: null,
             treeGetErr: false,
-            error: '',
-            members: [],
-            owner: {
-                id: '',
-                title: '',
-                name: ''
-            },
-            memberErr: '',
-            allMembers: '',
+            memberErr: false,            
             addMemberBtn: true,
             addingMember: false,
             addMemberErr: false,
-            addedMember: false,
-            tempMembers: [],
-            nodes: []
+            addedMember: false,            
+            nodes: [],
+            treeMembers: '',
+            members: []
         }
     },
     methods: {
 
         oc: function(domEl, x) {
+
 			this.chart = new OrgChart(domEl, {
-                menu: {
-                    pdf: { text: "Export PDF" }
-                },
-                mouseScrool: OrgChart.action.none,
 				nodes: x,
 				nodeBinding: {
 					field_0: "name",
@@ -178,340 +166,273 @@ export default {
 					img_0: "img"
 				}
 			});
-		},
+        },
 
+        getMembers(id, treeId) {
+
+            services.getAllMembers(id, treeId)
+            .then(res => {
+                
+                this.members = res.members
+
+            }).catch(err => {
+
+                this.treeGetErr = true
+                this.error = err;
+            })
+
+        },
+
+        getRel(memberGender, rel)
+        {
+            var usergender = localStorage.getItem('gender')
+            var newRel = ""
+
+            if(usergender == "male")
+            {
+                if(memberGender == "male")
+                {
+                    if(rel == "son" || rel == "daughter")
+                        newRel = "father"
+                    if(rel == "father" || rel == "mother")
+                        newRel = "son"
+                    if(rel == "brother" || rel == "sister")
+                        newRel = "brother"
+                    if(rel == "spouse")
+                        newRel = "spouse"
+                }
+
+                if(memberGender == "female")
+                {
+                    if(rel == "sister")
+                        newRel = "brother"
+                    if(rel == "mother")
+                        newRel = "son"
+                    if(rel == "daughter")
+                        newRel = "father"
+                    if(rel == "spouse")
+                        newRel = "spouse"
+                }
+            }
+
+            if(usergender == "female")
+            {
+
+                if(memberGender == "male")
+                {
+                    if(rel == "father")
+                        newRel = "daughter"
+                    if(rel == "brother")
+                        newRel = "brother"
+                    if(newRel == "son")
+                        newRel = "mother"
+                    if(rel == "spouse")
+                        newRel = "spouse"
+                }
+
+                if(memberGender == "female")
+                {
+                    if(rel == "daughter")
+                        newRel = "mother"
+                    if(rel == "mother")
+                        newRel = 'daughter'
+                    if(rel == "sister")
+                        newRel = "sister"
+                    if(rel == "spouse")
+                        newRel = "spouse"
+                }
+            }       
+
+            return newRel
+
+        },
+        
         addMember() {
 
-            this.addMemberBtn = false
-            this.addingMember = true
+            var pass = this.name.toLowerCase().trim().split(" ")[0] + this.dOb.split("-")[0]
 
-            if(!this.name || !this.email || !this.gender || !this.dOb || !this.relationship) return
+            if(!this.name || !this.gender || this.relationship || !this.dOb || !this.email)
+            {
+                this.memberErr = true
+                this.error = 'Empty fields!'
+            }
 
-            var getName = this.name.toLowerCase().trim().split(" ")
-            var pass = getName[0];
-            pass = pass + this.dOb.split("-")[0]            
-
-            var newMember = {
-                name: this.name,                
+            var member = {
+                name: this.name,
                 gender: this.gender,
-                email: this.email,
-                password: pass,
                 relationships: {
-                    name: this.getRelationship(this.relationship),
+                    name: this.getRel(this.gender, this.relationship),
                     with: localStorage.getItem('id'),
                     treeId: this.tree._id
                 },
-                dateOfBirth: this.dOb,
-                trees: {
-                    name: this.tree.name,
+                trees: {                    
                     treeId: this.tree._id,
                     owner: false
-                }
+                },
+                dateOfBirth: this.dOb,
+                email: this.email,
+                password: pass
             }
 
-            if(this.relationship == "father" || this.relationship == "mother")
-            {
-                this.getParentNumber(this.relationship, newMember)
-            }
-
-            // console.log(newMember)
-
-            this.addNow(newMember)
-
-
+            this.addNow(member)
         },
 
-        addNow(newMember)
-        {
-            services.addMember(newMember)
-            .then(res => {
+        addNow(memberData) {
 
-                // console.log(res)
+            this.addMemberBtn = false
+            this.addingMember = true;
 
-                if(res.status === 200)
-                {
-                    this.addingMember = false
-                    this.addedMember = true
-                    this.getAllMembers()
+            if(!memberData ||  memberData == null)
+            {
+                this.addingMember = false;
+                this.addMemberBtn = true
+                this.error = " Some fields might be empty! "
+                return
+            }
+            else
+            {
 
-                    setTimeout(() => {
-                        this.addedMember = false
-                        this.addMemberBtn = true
-                        this.name = this.gender = this.relationship = this.dOb = this.email = ''                            
-                        this.triggerChart()                    
-                    }, 3500)
-                }
+                services.addMember(memberData)
+                .then(res => {
+                    if(res.status === 200 || res.data.status === 200)
+                        this.addingMember = false
+                        this.addedMember = true                        
 
-            }).catch(err => {
+                        setTimeout(() => {
+                            this.addedMember = false
+                            this.addMemberBtn = true
+                        }, 2500)
 
-                if(err)
-                {
+                        this.getTree()                        
+
+                }).catch(err => {
                     this.addingMember = false
                     this.addMemberErr = true
+                    this.error = err
+                    setTimeout(() => {
+                        this.error = null
+                        this.addMemberBtn = true    
+                    }, 2500);
+                    
 
-                     setTimeout(() => {
-                        this.addMemberErr = false
-                        this.addMemberBtn = true
-                        this.error = err
-                        this.name = this.gender = this.relationship = this.dOb = this.email = ''
-                    }, 3500)
+                })
 
-                }
-                
-            })
-        },
-
-        getTree() {
-
-            const rid = this.$route.params.id
-            // console.log(rid)
-
-            services.viewTree(rid)
-            .then(res => {
-
-                if(res.status === 200)
-                {
-                    this.tree = res.data.tree   
-                    // this.getMembers()                 
-                    this.getAllMembers()
-                }
-
-            }).catch(err => {
-
-                if(err)
-                {
-                    this.treeGetErr = true;
-                    this.error = err;
-                    return null
-                }
-
-            })
-        },
-
-
-        getMembers() {
-
-            var tree = this.tree._id                        
-
-            var creds = {
-                id: localStorage.getItem('id'),
-                treeid: tree
             }
 
-            var members = ""
-            
-            services.getAllMembers(creds.id, creds.treeid)
-            .then(res => {
-
-                // console.log(res)
-
-                if(res.status === 200)
-                {
-                    members = res.members
-                    console.log(members) 
-                    return members                   
-                }
-
-            }).catch(err => {
-
-                if(err)
-                {
-                    this.memberErr = true
-                    this.error = err;                    
-                    return null
-                }
-
-            }) 
-            
-            // console.log(members)
-            // return members
-
         },
 
-        getAllMembers() {
+        async getTree()
+        {
+            const id = this.$route.params.id
+    
+            if(!id) return
+            else
+            {
+                await services.viewTree(id)
+                .then(res => {
 
-            var tree = this.tree._id
-            // console.log(tree)
+                    if(res.status === 200)
+                    {
+                        if(res.data.status === 200)
+                        {
+                            // console.log(res.data.tree)
+                            // return res.data.tree                   
+                            this.tree = res.data.tree
+                            this.treeMembers = res.data.tree.members
+                            this.getMembers(localStorage.getItem('id'), this.tree._id)
+                            this.getHierarchy(this.treeMembers)
 
-            var creds = {
-                id: localStorage.getItem('id'),
-                treeid: tree
+                        }
+                    }
+
+                }).catch(err => {
+
+                    this.treeGetErr = true
+                    this.error = err
+
+                })
             }
-            
-            services.getAllMembers(creds.id, creds.treeid)
-            .then(res => {
 
-                // console.log(res)
+        },
 
-                if(res.status === 200)
+        getNode(memberId, allMembers) 
+        {  
+            // console.log(allMembers)
+            allMembers.forEach((member) => {
+
+                if(member._id == memberId)
                 {
-                    this.allMembers = res.members
-                    this.getHierarchy(this.allMembers)
-                    // console.log(this.allMembers)
-                }
-
-            }).catch(err => {
-
-                if(err)
-                {
-                    this.memberErr = true
-                    this.error = err;
+                    console.log(member.name)
+                    return member.name
                 }
 
             })
-
         },
 
-        getRelationship(currentRel) {
+        getParentIndex(members, pid)
+        {
+            if(pid == null) return null
 
-            var nmg = ""
-
-            this.allMembers.forEach(member => {                                
-
-               if(member._id == localStorage.getItem('id'))
-                {                                        
-                    if(currentRel == "father" || currentRel == "mother")
-                    {
-                        if(member.gender == "male") 
-                            nmg = "son"
-                        if(member.gender == "female") 
-                            nmg =  "daughter"
-                    }
-                 
-                    if(currentRel == "brother" || currentRel == "sister")
-                    {                        
-                        if(member.gender == "male") {                             
-                            nmg = "brother"                                                        
-                        }
-                        
-                        if(member.gender == "female") {                             
-                            nmg =  "sister"
-                        }
-                    }
-                                            
-                    if(currentRel == "daughter" || currentRel == "son")
-                    {
-                        if(member.gender == "male") 
-                            nmg = "father"
-                        if(member.gender == "female") 
-                            nmg = "mother"
-                    }
-
-                }                            
-               
-            });
-
-            return nmg
-            
-        },
-
-        matchMembers(id, members) {
-
-            var name = ""
-            
-            members.forEach((member) => {
-            
-                if(member._id == id) 
-                {
-                    name = member.name
-                }
-
-            })
-
-            return name
-
-        },
-
-        getParent(tree, parentId) {
-
-            if(parentId == null ) return null   
-
-            tree.members.forEach((member, index) => {
-
-                if(member.memberId == parentId) return index
+            members.forEach((member, index) => {
+                if(member.memberId == pid) return index
                 else return null
-
             })
-
         },
 
-        async getHierarchy(members) {
+        getHierarchy(treeMembers) {
 
-            this.tree.members.forEach((member, index) => {
+            var ownerDone = false
+            // console.log(allMembers)
+            var members = this.members
 
-                if(member.relWithOwner == 'self' && member.memberId == localStorage.getItem('id'))
+            treeMembers.forEach((member, index) => {
+                
+                if(member.relWithOwner == 'self')
                 {
+                    ownerDone = true
                     var owner = {
-                        id:1,
-                        name: this.matchMembers(member.memberId, members),
+                        id: 1,
+                        name: this.getNode(member.memberId, members),
                         title: 'Owner',
-                        pid: this.getParent(this.tree, member.parentId)
+                        pid: this.getParentIndex(this.treeMembers, member.parentId)
                     }
 
-                    this.members.push(owner)
+                    this.nodes.push(owner)                    
                 }
-                else
+
+                if(ownerDone == true && index > 0)
                 {
-                    var mem = {
-                        id: index+1, 
-                        name: this.matchMembers(member.memberId, members),
+                    var push = {
+                        id: index, 
+                        name: this.getNode(member.memberId, members),
                         title: member.relWithOwner,
-                        pid: this.getParent(this.tree, member.parentId)
+                        pid: this.getParentIndex(this.treeMembers, member.parentId)
                     }
 
-                    this.members.push(mem)
+                    this.nodes.push(push)
                 }
+                else if(ownerDone == false)
+                {
+                    var pushMember = {
+                        id: index, 
+                        name: this.getNode(member.memberId, members),
+                        title: member.relWithOwner,
+                        pid: this.getParentIndex(this.treeMembers, member.parentId)
+                    }
+
+                    this.nodes.push(pushMember)
+                }
+
 
             })
-
+            
             this.triggerChart()
 
-            // console.log(this.members)
-
         },
-
-        getParentNumber(relation, newMember) {
-
-            // this.getMembers()
-            var members = this.getMembers()
-            
-            console.log(members)
-            
-
-            members.forEach((member) => {
-                if(member._id == localStorage.getItem('id'))
-                {
-                    if(member.relationships.name == relation)
-                    {
-                        this.addMemberErr = true;
-                        this.error = "The selected relation may already exist. Try another!"
-                        return
-                    }
-
-                    else if(member.relationships.name == relation && (member.relationships.name == "mother" || member.relationships.name == "father" ) )
-                    {
-                        this.addMemberErr = true
-                        this.error = "Mother & Father both relationships may exist."
-                        return
-                    }
-                    else this.addParent(newMember)
-                }
-            })
-
-        },
-
-        addParent(newMember) {
-
-            this.addNow(newMember)
-
-        },
-
-        triggerChart() {
-
-            this.nodes = this.members    
+        
+        triggerChart() {            
 
             this.oc(this.$refs.tree, this.nodes)	
-
         }
 
     },
@@ -522,26 +443,21 @@ export default {
 
     },
 
+    beforeCreate() {
+
+
+    },
+
     created() {
     
-        // this.getTree();
-        // this.getAllMembers();
+
     },
 
     mounted() {
+                    
+        // this.getAllMembers()
+        // this.getHierarchy()
 
-        // console.log(this.allMembers)
-        // console.log(this.tree)
-        // console.log(this.members)    
-
-        if(this.members) {            
-            setTimeout(() => {
-               
-                this.triggerChart()
-
-            }, 2500)        
-            
-        } else this.treeGetErr = true
     }
 
 }

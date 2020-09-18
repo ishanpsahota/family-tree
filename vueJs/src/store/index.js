@@ -1,8 +1,8 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import axios from 'axios'
-import crypto from 'crypto'
 import services from '../api/services'
+import cryptoJs from 'crypto-js'
 
 // function getToken() {
 //   return crypto.randomBytes(64).toString('hex');
@@ -56,11 +56,16 @@ export default new Vuex.Store({
                     if(resp.data.status === 200)
                     {
                         // console.log(resp)
+
+                        var token = cryptoJs.AES.encrypt(resp.data.member.email, 'ishanpsahota@m3ral@wda').toString() 
+                        token = token.replace(/[^a-zA-Z0-9]/g,'')
+
                         var data = {
-                          'token': crypto.randomBytes(64).toString('hex'),
+                          'token': token,
                           'name': resp.data.member.name,
                           'email': resp.data.member.email,
-                          'id': resp.data.member._id
+                          'id': resp.data.member._id,
+                          'gender': resp.data.member.gender
                         };
                       
                         // console.log(data)
@@ -68,7 +73,8 @@ export default new Vuex.Store({
                         localStorage.setItem('token', data.token);
                         localStorage.setItem('name',  data.name);
                         localStorage.setItem('email',  data.email);
-                        localStorage.setItem('id', data.id);                        
+                        localStorage.setItem('id', data.id);  
+                        localStorage.setItem('gender', data.gender)                      
 
                         // Add the following line:
                         // axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;                        

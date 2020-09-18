@@ -102,21 +102,31 @@ router.post('/register', function(req, res){
     }
     else
     {
+        // Finding member if exists
         Member.findOne({ email: req.body.email }).exec(function(err, member) {
+            // if error in mongo
             if(err) return res.sendStatus(400)
+            // if member exists, return
             else if(member) return res.sendStatus(409)
+            // else register the member
             else
             {
                 var newMember = req.body
                 // console.log(newMember)
 
+                /* register the member */
                 Member.create(newMember, function(err, memberRegistered) {
+                    // if error in mongo
                     if(err) return res.send(400)
+                    // if not able to register the member
                     if(!memberRegistered) return res.sendStatus(401)
+                    // if member registered
                     if(memberRegistered)
                     {
                         // console.log(req.body.gender + " " + req.body.relationships.name)
                         // console.log(getRel(req.body.gender, req.body.relationships.name))
+
+                        // updating relation in creator doc
                         var relation = {
                             name: getRel(req.body.gender, req.body.relationships.name),
                             with: memberRegistered._id,
@@ -124,12 +134,31 @@ router.post('/register', function(req, res){
                         }
 
                         // console.log(relation)
+                        // return null
 
+                        // pushing relation in tree owner
                         Member.findByIdAndUpdate(req.body.relationships.with, { $push : {relationships: relation}}, function(err, memberUpdated) {
-                            if(err) { console.log(err); return res.sendStatus(400)}
-                            if(!memberUpdated) return res.sendStatus(401)
+                            // if error in mongo
+                            if(err) 
+                            {
+                                console.log(err)
+                                return res.send({
+                                    status: 400,
+                                    error: 'Bad Request'
+                                })
+                            }
+                            // if not able to update relation in tree owner
+                            if(!memberUpdated)
+                            {
+                                return res.send({
+                                    status: 401,
+                                    error: 'Error updating member details.'
+                                })
+                            }
+                            // if member updated 
                             if(memberUpdated) {
 
+                                // adding member in tree
                                 var newTreeMember = {
 
                                     memberId: memberRegistered._id,
@@ -137,18 +166,36 @@ router.post('/register', function(req, res){
                                     parentId: null
                                 }
 
+                                // finding tree & pushing member deets
                                 Tree.findByIdAndUpdate(req.body.trees.treeId, { $push: {members: newTreeMember } }, function(err, treeMemberAdded) {
 
                                     // console.log(req.body.relationships)
-                                    if(err) { console.log(err); return res.sendStatus(400)}
-                                    if(!treeMemberAdded) return res.sendStatus(401)
+                                    // if error  in mongo
+                                    if(err)
+                                    {
+                                        console.log(err)
+                                        return res.send({
+                                            status: 400,
+                                            error: "Bad Request updating tree members"
+                                        })
+                                    }
+                                    // if not able to push member into tree
+                                    if(!treeMemberAdded)
+                                    {
+                                        return res.send({
+                                            status: 401,
+                                            error: "Error updating tree members"
+                                        })
+                                    }
+                                    // if pushed member into tree
                                     if(treeMemberAdded) {
                                         // return res.sendStatus(200)
-                                        // console.log("see relation " + req.body.relationships)
-                                        if(req.body.relationships.name == 'father' || req.body.relationships.name == 'mother')
+                                        // console.log(req.body.relationships)
+                                        var treeP = getRel(req.body.gender, req.body.relationships.name)
+                                        if(treeP == "father" || treeP == "mother")
                                         {
-                                            console.log("father/mother")
-                                            Tree.findOneAndUpdate({ "members.memberId": req.body.relationships.with }, { "members.parentId": treeMemberAdded._id  }).exec(function(err, treeUpdated) {
+                                            // console.log("father/mother")
+                                            Tree.findOneAndUpdate({ "_id":req.body.trees.treeId,"members.memberId": req.body.relationships.with }, { $set: {"members.$.parentId": memberRegistered._id}  }).exec(function(err, treeUpdated) {
 
                                                 if(err) { console.log(err); return res.sendStatus(400)}
                                                 if(!treeUpdated) return res.sendStatus(401)
@@ -181,20 +228,29 @@ router.post('/owner', function(req, res) {
 
     if(!req.body.email || !req.body.password || !req.body.gender || !req.body.name || !req.body.dOb) {
         console.log("exp-rtr-ownr-mpt")
-        return new Error("Missing credentials")
+        return res.send({
+            status: 406,
+            error: 'Details missing. Fill the registration form completely.'
+        })
     }
     else
     {        
-        
         Member.findOne({ 'email' : req.body.email } ).exec(function(err, member) {
             
             if(err) {
                 console.log("exp-rtr-ownr-err")
-                throw err
+                return res.send({
+                    status: 400,
+                    error: 'Error in DB'
+                })
             } 
             else if(member) {
                 console.log("exp-rtr-lgn-ownr-ext")
-                return "Member already exists!"}
+                return res.send({
+                    status: 302,
+                    error: 'Already exists'
+                })
+            }
             else
             {
                 console.log("exp-rtr-ownr-dng")
@@ -209,10 +265,23 @@ router.post('/owner', function(req, res) {
                 }
 
                 Member.create(newMember, function(err, memberRegistered) {
-                    if(err) return res.sendStatus(400)
+                    if(err) {                        
+                        return res.send({
+                            status: 400,
+                            error: 'Bad Request'
+                        })
+                    } 
+                    else if(!memberRegistered) {                        
+                        return res.send({
+                            status: 401,
+                            error: 'Unauthorized'
+                        })
+                    }
                     else if(memberRegistered)
                     {
-                        return res.sendStatus(200)
+                        return res.send({
+                            status: 200
+                        })
                     }
                 })
             }
@@ -280,13 +349,19 @@ router.get('/trees/:id', function(req, res) {
     {
         const id = req.params.id
         Tree.find({ $or: [ { 'ownerId': id }, { "members.memberId": id } ] }).exec(function(err, trees) {
-            if(err) return res.sendStatus(400)
-            else if(!trees) return res.sendStatus(404)
+            if(err) return res.send({
+                status: 400,
+                error: 'Bad Request'
+            })
+            else if(!trees) return res.send({
+                status: 404,
+                error: 'Tree Not Found'
+            })
             else {
                 res.send({ 
                     status: 200,
                     trees: trees
-                 })
+                })
             }
         })
     }
