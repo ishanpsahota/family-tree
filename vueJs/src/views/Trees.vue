@@ -44,7 +44,7 @@
                             <button type="button" v-if="treeAdded" class="btn btn-success m-1">Created!</button>
                             <button type="button" v-if="treeAddErr" class="btn btn-danger m-1">Error!</button>
                             <button type="reset" @click="toggleDiv()" class="btn btn-danger m-1">Cancel</button>
-                            <div v-if="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <div v-if="treeAddErr" class="alert alert-danger alert-dismissible fade show" role="alert">
                                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                     <span class="sr-only">Close</span>
