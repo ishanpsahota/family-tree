@@ -5,6 +5,7 @@ import Login from '../views/Login.vue'
 import Trees from '../views/Trees.vue'
 import Register from '../views/Register.vue'
 import NewTree from '../views/NewTree.vue'
+// import Viewtree from '../views/ViewTree2.vue'
 import Viewtree from '../views/Viewtree.vue'
 import store from '../store/index'
 

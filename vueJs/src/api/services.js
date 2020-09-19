@@ -3,8 +3,8 @@ import axios from 'axios'
 axios.defaults.headers.common['Access-Control-Allow-Origin'] = "*"
 axios.defaults.headers.common['Access-Control-Allow-Headers'] = 'http://localhost:8080';
 
-// var url = `http://localhost:8081`
-var url = 'https://family-tree-i.herokuapp.com'
+var url = `http://localhost:8081`
+// var url = 'https://family-tree-i.herokuapp.com'
 
 var urls = { 
 
@@ -14,7 +14,8 @@ var urls = {
     'getTrees': url + '/trees/',
     'viewTrees': url + '/viewtree/',
     'getAllMembers': url + '/members/',
-    'url': url
+    'url': url,
+    'correctHierarchy': url + '/hierarchy/'
 }
 
 
@@ -148,6 +149,27 @@ export default {
             })
 
         })
+    },
+
+    correctHierarchy(id, treeid) {
+
+        if(!id || !treeid) return
+        else
+            return new Promise((resolve, reject) => {
+
+                axios.get(this.getUrl().correctHierarchy + id + '/' + treeid)
+                .then(res => {
+
+                    resolve(res)
+
+                }).catch(err => {
+
+                    reject(err)
+
+                })
+
+            })
+
     }
     
 

@@ -156,7 +156,6 @@ export default {
             addingMember: false,
             addMemberErr: false,
             addedMember: false,
-            tempMembers: [],
             nodes: []
         }
     },
@@ -174,7 +173,8 @@ export default {
 					img_0: "img"
 				}
 			});
-		},
+        },
+        
         addMember() {
             this.addMemberBtn = false
             this.addingMember = true
@@ -240,13 +240,12 @@ export default {
         },
         getTree() {
             const rid = this.$route.params.id
-            // console.log(rid)
+            
             services.viewTree(rid)
             .then(res => {
                 if(res.status === 200)
                 {
                     this.tree = res.data.tree   
-                    // this.getMembers()                 
                     this.getAllMembers()
                 }
             }).catch(err => {
@@ -312,6 +311,7 @@ export default {
                 }
             })
         },
+
         getRelationship(currentRel) {
             var nmg = ""
             this.allMembers.forEach(member => {                                
@@ -343,6 +343,9 @@ export default {
                         if(member.gender == "female") 
                             nmg = "mother"
                     }
+
+                    if(currentRel == "spouse")
+                        nmg = "spouse"
                 }                            
                
             });
@@ -395,10 +398,9 @@ export default {
             // console.log(this.members)
         },
         getParentNumber(relation, newMember) {
-            // this.getMembers()
+            
             var members = this.getMembers()
             
-            console.log(members)
             
             members.forEach((member) => {
                 if(member._id == localStorage.getItem('id'))
@@ -433,13 +435,9 @@ export default {
     },
     created() {
     
-        // this.getTree();
-        // this.getAllMembers();
     },
     mounted() {
-        // console.log(this.allMembers)
-        // console.log(this.tree)
-        // console.log(this.members)    
+        
         if(this.members) {            
             setTimeout(() => {
                

@@ -4,6 +4,7 @@ const router = express.Router();
 const CryptoJS = require('crypto-js');
 const member = require('../models/member');
 
+
 // const bcrypt = require('bcrypt-nodejs');
 // const fs = require('fs');
 
@@ -27,23 +28,31 @@ const url = `http://localhost:${process.env.PORT}`
 function getRel(gender, rel) {
 
     var newrel = ""
+    console.log(gender)
+    console.log(rel)
 
     if(gender == "male")
+    {
         if(rel == "son" || rel == "daughter")
-            newrel = "father"
+            {newrel = "father"}
         if(rel == "father" || rel == "mother")
-            newrel = "son"
+            {newrel = "son"}
         if(rel == "brother" || rel == "sister")
-            newrel = "brother"
+            {newrel = "brother"}
+    }
+        
     
     if(gender == "female")
+    {
         if(rel == "son" || rel == "daughter")
-            newrel = "mother"
+            {newrel = "mother"}
         if(rel == "father" || rel == "mother")
-            newrel = "daughter"
+            {newrel = "daughter"}
         if(rel == "brother" || rel == "sister")
-            newrel = "sister"
+            {newrel = "sister"}
+    }
     
+    console.log(newrel)
     return newrel
 
 }
@@ -133,8 +142,7 @@ router.post('/register', function(req, res){
                             treeId: req.body.trees.treeId
                         }
 
-                        // console.log(relation)
-                        // return null
+                        // console.log(relation)                        
 
                         // pushing relation in tree owner
                         Member.findByIdAndUpdate(req.body.relationships.with, { $push : {relationships: relation}}, function(err, memberUpdated) {
@@ -424,6 +432,67 @@ router.get('/members/:id/:treeid', function(req, res) {
 
             }
 
+        })
+    }
+
+})
+
+router.get('/hierarchy/:id/:treeid', function(req, res) {
+
+    var treeMems = []
+
+    if(!req.params.id || !req.params.treeid) return res.sendStatus(400)
+    else
+    {
+        const id = req.params.id
+        const treeid = req.params.treeid
+
+        Member.findById(id, function(err, memberFound) {
+            if(err) return res.sendStatus(401)
+            if(!memberFound) return res.sendStatus(404)
+            if(memberFound) {
+
+                Tree.findById(treeid, function(err, treeFound) {
+                    if(err) return res.sendStatus(400)
+                    if(!treeFound) return res.sendStatus(404)
+                    if(treeFound) {                        
+
+                        treeMems = treeFound.members
+                        treeMems.forEach(member => {
+                            
+                            const pid = member.parentId
+                            // console.log(pid)
+
+                            if(pid)
+                            {                                
+                                
+                                treeMems.forEach(treeMemagain => {
+
+                                    if(treeMemagain.relWithOwner == 'sister' || treeMemagain.relWithOwner == 'brother')
+                                    {
+                                        const setId = treeMemagain._id
+                                        console.log(setId)
+
+                                        Tree.findOneAndUpdate({"members._id": setId}, { $set:  {"members.$.parentId": pid} } ,function(err, pIdupdated) {
+
+                                            if(err) { console.log(err); return res.end("err")}
+                                            if(!pIdupdated) return res.end("ERR")
+                                            if(pIdupdated) return res.end("OK")
+
+                                        })
+
+                                    }
+                                })
+                                
+                            }
+
+                        });                        
+
+                    }
+                })
+                
+
+            }
         })
     }
 

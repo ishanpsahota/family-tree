@@ -90,22 +90,30 @@
             <div v-if="tree" class="w-100 col-11 m-auto bg-white rounded shadow">   
                 <small> <code> The tree may take some time to load! </code> </small>   
                 <!-- Members -->                      
-                        
-                        <div v-if="nodes" class="row" >
-                            <div v-for="(node, i) in nodes" :key="i" class="card shadow-sm col-md-2 col-10 m-1">                                
-                                <div class="card-body">
-                                    <h4 class="card-title">{{node.name}}</h4>
-                                    <p class="card-text">{{node.title}}</p>
-                                </div>
+                    <!-- <div v-if="nodes" class="row p-3" >
+                        <div v-for="(node, i) in nodes" :key="i" class="card shadow-sm col-md-2 col-10 m-1">                                
+                            <div class="card-body">
+                                <h4 class="card-title">{{node.name}}</h4>
+                                <p class="card-text">{{node.title}}</p>
                             </div>
                         </div>
-                    
+                    </div>                     -->
                 <!-- Members end -->
-                <!-- Chart -->                
-                    <div id="tree" ref="tree"> </div>
+                <!-- Chart -->               
+                    <div class="col-12">
+                        <div id="tree" ref="tree"> </div>
+                    </div>
                 <!-- Chart end -->
+                <div class="col-12">
+                    <p> Incorrect Hierarchy? Click 
+                        <button type="button" v-if="correctH" @click="correctHierarchy()" class="btn btn-dark btn-sm"> here </button> 
+                        <button type="button" v-if="correcting" disabled class="btn btn-dark btn-sm"> <div class="spinner-border text-light"></div> </button> 
+                        <button type="button" v-if="correctDone" disabled  class="btn btn-success btn-sm"> Done </button> 
+                        <button type="button" v-if="correctErr" disabled class="btn btn-danger btn-sm"> Error! </button> 
+                        to correct it. </p>
+                </div>
             </div>
-            <div v-if="treeGetErr || memberErr" class="col-12">
+            <div v-if="treeGetErr || memberErr || correctErr" class="col-12">
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -151,7 +159,11 @@ export default {
             addedMember: false,            
             nodes: [],
             treeMembers: '',
-            members: []
+            allMembers: '',
+            correctH: true,
+            correcting: false,
+            correctDone: false,
+            correctErr: false
         }
     },
     methods: {
@@ -159,6 +171,10 @@ export default {
         oc: function(domEl, x) {
 
 			this.chart = new OrgChart(domEl, {
+                menu: {
+                    pdf: {text: "Export PDF"}
+                },
+                mouseScrool: OrgChart.action.none,
 				nodes: x,
 				nodeBinding: {
 					field_0: "name",
@@ -168,7 +184,7 @@ export default {
 			});
         },
 
-        getMembers(id, treeId) {
+        getAllMembers(id, treeId) {
 
             services.getAllMembers(id, treeId)
             .then(res => {
@@ -181,6 +197,35 @@ export default {
                 this.error = err;
             })
 
+        },
+
+        getMembers() {
+            var tree = this.tree._id                        
+            var creds = {
+                id: localStorage.getItem('id'),
+                treeid: tree
+            }
+            // var members = ""
+            
+            services.getAllMembers(creds.id, creds.treeid)
+            .then(res => {
+                
+                if(res.status === 200)
+                {
+                    // members = res.members
+                    // console.log(members) 
+                    // return members   
+                    this.allMembers = res.members
+                    this.getHierarchy(this.allMembers)                
+                }
+            }).catch(err => {
+                if(err)
+                {
+                    this.memberErr = true
+                    this.error = err;                    
+                    return null
+                }
+            }) 
         },
 
         getRel(memberGender, rel)
@@ -291,7 +336,6 @@ export default {
             }
             else
             {
-
                 services.addMember(memberData)
                 .then(res => {
                     if(res.status === 200 || res.data.status === 200)
@@ -334,14 +378,9 @@ export default {
                     if(res.status === 200)
                     {
                         if(res.data.status === 200)
-                        {
-                            // console.log(res.data.tree)
-                            // return res.data.tree                   
-                            this.tree = res.data.tree
-                            this.treeMembers = res.data.tree.members
-                            this.getMembers(localStorage.getItem('id'), this.tree._id)
-                            this.getHierarchy(this.treeMembers)
-
+                        {                                       
+                            this.tree = res.data.tree                            
+                            this.getMembers();                            
                         }
                     }
 
@@ -356,57 +395,65 @@ export default {
         },
 
         getNode(memberId, allMembers) 
-        {  
-            // console.log(allMembers)
+        {              
+            var name = ""
+            
             allMembers.forEach((member) => {
-
-                if(member._id == memberId)
+            
+                if(member._id == memberId) 
                 {
-                    console.log(member.name)
-                    return member.name
+                    name = member.name
                 }
-
             })
+            return name
         },
 
         getParentIndex(members, pid)
         {
-            if(pid == null) return null
+            var index = ""
 
-            members.forEach((member, index) => {
-                if(member.memberId == pid) return index
-                else return null
-            })
+            if(pid == null) 
+                index = null
+            else
+            {
+                members.forEach((member, i) => {
+                    if(member.memberId == pid)
+                    {                    
+                        index = i+1
+                    }                                    
+                })    
+            }
+
+            return index
         },
 
-        getHierarchy(treeMembers) {
+        getHierarchy(allMembers) {
 
-            var ownerDone = false
-            // console.log(allMembers)
-            var members = this.members
+            var ownerDone = false            
+            this.nodes = []
 
-            treeMembers.forEach((member, index) => {
+            this.tree.members.forEach((member, index) => {
                 
                 if(member.relWithOwner == 'self')
                 {
                     ownerDone = true
                     var owner = {
                         id: 1,
-                        name: this.getNode(member.memberId, members),
+                        name: this.getNode(member.memberId, allMembers),
                         title: 'Owner',
-                        pid: this.getParentIndex(this.treeMembers, member.parentId)
-                    }
-
-                    this.nodes.push(owner)                    
+                        pid: this.getParentIndex(this.tree.members, member.parentId)                
+                    }                    
+                    
+                    this.nodes.push(owner)                         
                 }
 
                 if(ownerDone == true && index > 0)
                 {
                     var push = {
-                        id: index, 
-                        name: this.getNode(member.memberId, members),
+                        id: index+1, 
+                        name: this.getNode(member.memberId, allMembers),
                         title: member.relWithOwner,
-                        pid: this.getParentIndex(this.treeMembers, member.parentId)
+                        pid: this.getParentIndex(this.tree.members, member.parentId)
                     }
 
                     this.nodes.push(push)
@@ -414,25 +461,71 @@ export default {
                 else if(ownerDone == false)
                 {
                     var pushMember = {
-                        id: index, 
-                        name: this.getNode(member.memberId, members),
+                        id: index+1, 
+                        name: this.getNode(member.memberId, allMembers),
                         title: member.relWithOwner,
-                        pid: this.getParentIndex(this.treeMembers, member.parentId)
+                        pid: this.getParentIndex(this.tree.members, member.parentId)
                     }
 
                     this.nodes.push(pushMember)
                 }
 
 
-            })
+            })  
             
             this.triggerChart()
 
         },
         
-        triggerChart() {            
+        triggerChart() {  
+            
+            // console.log(this.nodes)
 
             this.oc(this.$refs.tree, this.nodes)	
+        },
+
+        correctHierarchy() {
+
+            this.correctH = false
+            this.correcting = true
+
+            services.correctHierarchy(localStorage.getItem('id'), this.tree._id)
+            .then(res => {
+
+                if(res.status === 200)
+                {
+                    this.getTree()
+                    this.correcting = false
+                    this.correctDone = true
+
+                    setTimeout(() => {
+                        this.correctDone = false
+                        this.correctH = true
+                    }, 2500);
+                }
+
+            }).catch(err => {
+
+                this.correcting = false
+                this.correctErr = true
+                this.error = err
+
+                setTimeout(() => {
+                    this.correctErr = false
+                    this.correctH = true
+                    this.error = null
+                }, 2500);
+
+            })
+
+            setTimeout(() => {
+                    this.correcting = false
+                    this.correctDone = false
+                    this.correctErr = false
+                    this.error = null
+                    this.correctH = true
+                }, 2500);
+
         }
 
     },
