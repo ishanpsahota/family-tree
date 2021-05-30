@@ -72,7 +72,7 @@ router.post('/login', function(req, res){
             console.log("exp-rtr-lgn-dng")
             if(error) 
             {
-                console.log('error: '; error)
+                console.log('error: ', error)
                 res.send({
                     success: false,
                     error: error,
