@@ -72,6 +72,7 @@ router.post('/login', function(req, res){
             console.log("exp-rtr-lgn-dng")
             if(error) 
             {
+                console.log('error: '; error)
                 res.send({
                     success: false,
                     error: error,
@@ -80,6 +81,7 @@ router.post('/login', function(req, res){
             }
             else if(!member)
             {
+                console.log('nf')
                 res.send({
                     success: false,
                     error: "Not found",
@@ -90,7 +92,8 @@ router.post('/login', function(req, res){
             {
                 // return memberData = {
                 //     member
-                // }
+                // }                
+                console.log('member: ', member);
                 res.send({
                     success: true,
                     member,
