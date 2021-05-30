@@ -67,6 +67,9 @@ router.post('/login', function(req, res){
         return
     } 
     else {
+        console.log('email: ', req.body.email)
+        console.log('pass: ', req.body.password)
+        
         Member.authenticate(req.body.email, req.body.password, function(error, member)
         {
             console.log("exp-rtr-lgn-dng")
